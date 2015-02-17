@@ -1,11 +1,5 @@
 #!/bin/bash
 set -e
-printf "Waiting for Ironic client to install..."
-while [[ ! -f /tmp/.ironic-client ]]; do
-    printf '.'
-    sleep 1
-done
-echo
 cd /opt/stack/ironic
 python setup.py develop
 if [[ -f ironic/ironic.sqlite ]]; then

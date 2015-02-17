@@ -1,8 +1,14 @@
 #!/bin/bash
 set -e
+echo "Waiting for the Ironic API to install..."
+while [[ ! -f /tmp/.ironic-api ]]; do
+    printf '.'
+    sleep 1
+done
+echo
 cd /opt/stack/python-ironicclient
 python setup.py develop
 echo >/tmp/.ironic-client
 export OS_AUTH_TOKEN=fake-token
 export IRONIC_URL=http://localhost:6385/
-/bin/bash -l
+exec /bin/bash -l

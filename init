@@ -28,7 +28,7 @@ chmod 775 /var/run/screen
 screen -d -m -S dockonic -t 'Root Shell'
 screen -S dockonic -X caption always '%{-b ..}%-w%{+b ..}[[%n%f*%t]]%{-}%+w'
 screen -S dockonic -X zombie kr
-for c in ironic-cli ironic-api ironic-conductor; do
+for c in ironic-api ironic-conductor ironic-cli; do
     screen -S dockonic -X \
     	screen -t "$c" "/opt/dockonic/$c"
 done
