@@ -1,0 +1,32 @@
+#!/bin/bash
+
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+
+if ! which docker &>/dev/null; then
+    echo "Please install Docker!"
+    exit 1
+fi
+
+if ! [[ -d $1 && -d $1/ironic && -d $1/python-ironicclient ]]; then
+    echo "'$1' does not have a clone of ironic or python-ironicclient!"
+    exit 1
+fi
+
+os_repos="$(readlink -f "$1")"
+dockonic="$(readlink -f "$0")"
+dockonic=${dockonic%/*}
+if [[ ! -d $dockonic ]]; then
+    echo "Cannot figure out where the dockonic repo is!"
+    exit 1
+fi
+    
+shift
+
+image="ubuntu:14.04"
+
+docker_args=(-t -i -w /opt/stack -v "$os_repos:/opt/stack")
+docker_args+=(-v "$dockonic:/opt/dockonic")
+docker_args+=(-e "OUTER_UID=$(id -u)")
+docker_args+=(-e "OUTER_GID=$(id -g)")
+docker_args+=(--privileged)
+docker run "${docker_args[@]}" "$image" "/opt/dockonic/init" "$@"

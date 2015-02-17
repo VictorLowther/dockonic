@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+cd /opt/stack/python-ironicclient
+tox -evenv -- echo 'done'
+. .tox/venv/bin/activate
+python setup.py develop
+echo "Run '. .tox/venv/bin/activate'"
+exec /bin/bash -i

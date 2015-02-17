@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+cd /opt/stack/ironic
+tox -evenv -- echo 'done'
+. .tox/venv/bin/activate
+python setup.py develop
+if [[ -f ironic/ironic.sqlite ]]; then
+    ironic-dbsync --config-file /opt/dockonic/ironic.conf upgrade
+else
+    ironic-dbsync --config-file /opt/dockonic/ironic.conf create_schema
+fi
+ironic-api -v -d --config-file /opt/dockonic/ironic.conf

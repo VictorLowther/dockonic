@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+cd /opt/stack/ironic
+printf '%s' "Waiting on the Ironic API to start"
+while ! ps aux |egrep -q '[i]ronic-api'; do
+      printf '%s' '.'
+      sleep 1
+done
+echo
+. .tox/venv/bin/activate
+ironic-conductor -v -d --config-file /opt/dockonic/ironic.conf

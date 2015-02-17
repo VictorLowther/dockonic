@@ -1,0 +1,34 @@
+#!/bin/bash
+export LANG=en_US.UTF-8
+export LC_ALL=en_US
+if grep -q stack /etc/passwd; then
+    find /var -xdev -user stack -exec chown "$OUTER_UID" '{}' ';'
+    usermod -o -u "$OUTER_UID" stack
+else
+    useradd -o -U -u "$OUTER_UID" \
+	-d /opt/stack -m \
+	-s /bin/bash \
+	stack
+fi
+if grep -q stack /etc/group; then
+    find /var -xdev -group stack -exec chown "$OUTER_UID:$OUTER_GID" '{}' ';'
+    groupmod -o -g "$OUTER_GID" stack
+    usermod -g "$OUTER_GID" stack
+fi
+
+apt-get update
+apt-get install -y screen python-pip python-dev libssl-dev libxml2-dev \
+	libxslt-dev libpq-dev libffi-dev gettext git ipmitool tftpd-hpa \
+	syslinux syslinux-common python-numpy libmysqlclient-dev
+
+service rabbitmq-server start
+chmod 775 /var/run/screen
+
+screen -d -m -S dockonic -t 'Root Shell'
+screen -S dockonic -X caption always '%{-b ..}%-w%{+b ..}[[%n%f*%t]]%{-}%+w'
+screen -S dockonic -X zombie kr
+for c in ironic-cli ironic-api ironic-conductor; do
+    screen -S dockonic -X \
+    	screen -t "$c" su -c "/opt/dockonic/$c" stack
+done
+screen -R
