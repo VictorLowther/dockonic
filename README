@@ -1,0 +1,12 @@
+This is a stupid wrapper around Docker for running
+Ironic tests and quick dev work.  To run it, run
+
+    ./dockonic /path/to/openstack/repos
+
+where /path-to-openstack-repos is where your ironic and
+python-ironicclient repos live.
+
+It is currently noptimized, and sets up a new
+container from scratch each time it is run.  However,
+it bind-mounts your source in the container, so you do not
+have to kill and restart the container every time you make a change.
