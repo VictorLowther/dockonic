@@ -1,12 +1,17 @@
 #!/bin/bash
 set -e
+printf "Waiting for Ironic client to install..."
+while [[ ! -f /tmp/.ironic-client ]]; do
+    printf '.'
+    sleep 1
+done
+echo
 cd /opt/stack/ironic
-tox -evenv -- echo 'done'
-. .tox/venv/bin/activate
 python setup.py develop
 if [[ -f ironic/ironic.sqlite ]]; then
-    ironic-dbsync --config-file /opt/dockonic/ironic.conf upgrade
+    su -c 'ironic-dbsync --config-file /opt/dockonic/ironic.conf upgrade' stack
 else
-    ironic-dbsync --config-file /opt/dockonic/ironic.conf create_schema
+    su -c 'ironic-dbsync --config-file /opt/dockonic/ironic.conf create_schema' stack
 fi
-ironic-api -v -d --config-file /opt/dockonic/ironic.conf
+echo >/tmp/.ironic-api
+su -c 'ironic-api -v -d --config-file /opt/dockonic/ironic.conf' stack
