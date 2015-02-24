@@ -1,6 +1,8 @@
 #!/bin/bash
 export LANG=en_US.UTF-8
 export LC_ALL=en_US
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+set -x
 if grep -q stack /etc/passwd; then
     find /var -xdev -user stack -exec chown "$OUTER_UID" '{}' ';'
     usermod -o -u "$OUTER_UID" stack
@@ -17,19 +19,16 @@ if grep -q stack /etc/group; then
 fi
 
 apt-get update
-apt-get install -y screen python-pip python-dev libssl-dev libxml2-dev \
+apt-get install -y tmux python-pip python-dev libssl-dev libxml2-dev \
     libxslt-dev libpq-dev libffi-dev gettext git ipmitool tftpd-hpa \
     syslinux syslinux-common python-numpy libmysqlclient-dev python-tox \
     rabbitmq-server python-openwsman
 
 service rabbitmq-server start
-chmod 775 /var/run/screen
-
-screen -d -m -S dockonic -t 'Root Shell'
-screen -S dockonic -X caption always '%{-b ..}%-w%{+b ..}[[%n%f*%t]]%{-}%+w'
-screen -S dockonic -X zombie kr
+#chmod 775 /var/run/screen
+tmux new-session -d -n control -s dockonic "/bin/bash -l"
+tmux set-option -t dockonic set-remain-on-exit on
 for c in ironic-api ironic-conductor ironic-cli; do
-    screen -S dockonic -X \
-    	screen -t "$c" "/opt/dockonic/$c"
+    tmux new-window -n dockonic:$c "/opt/dockonic/$c"
 done
-screen -R
+tmux attach-session -t dockonic
